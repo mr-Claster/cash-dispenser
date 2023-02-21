@@ -4,22 +4,26 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.util.Objects;
 
 @Entity
-public class MoneyStack implements Cloneable {
+@Table(name = "bills")
+public class Bills implements Cloneable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long number;
-    private Integer par;
+    private Integer number;
+    @OneToOne
+    private Par par;
 
-    public MoneyStack() {
+    public Bills() {
     }
 
-    public MoneyStack(Long number, Integer par) {
+    public Bills(Integer number, Integer par) {
         this.number = number;
-        this.par = par;
+        this.par = new Par(par);
     }
 
     public Long getId() {
@@ -30,26 +34,26 @@ public class MoneyStack implements Cloneable {
         this.id = id;
     }
 
-    public Long getNumber() {
+    public Integer getNumber() {
         return number;
     }
 
-    public void setNumber(Long number) {
+    public void setNumber(Integer number) {
         this.number = number;
     }
 
-    public Integer getPar() {
+    public Par getPar() {
         return par;
     }
 
-    public void setPar(Integer par) {
+    public void setPar(Par par) {
         this.par = par;
     }
 
     @Override
-    public MoneyStack clone() {
+    public Bills clone() {
         try {
-            return (MoneyStack) super.clone();
+            return (Bills) super.clone();
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);
         }
@@ -63,15 +67,15 @@ public class MoneyStack implements Cloneable {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        MoneyStack moneyStack = (MoneyStack) o;
-        return Objects.equals(id, moneyStack.id)
-                && Objects.equals(number, moneyStack.number)
-                && Objects.equals(par, moneyStack.par);
+        Bills that = (Bills) o;
+        return Objects.equals(id, that.id)
+                && Objects.equals(number, that.number)
+                && Objects.equals(par, that.par);
     }
 
     @Override
     public String toString() {
-        return "OneDenominationBills{"
+        return "Bills{"
                 + "id=" + id
                 + ", number=" + number
                 + ", par=" + par

@@ -1,63 +1,63 @@
 package springboot.cashdispenser.service.impl;
 
 import jakarta.transaction.Transactional;
-import org.springframework.stereotype.Service;
-import springboot.cashdispenser.model.Card;
-import springboot.cashdispenser.model.MoneyStack;
-import springboot.cashdispenser.service.CardService;
-import springboot.cashdispenser.service.CashDispenserService;
-import springboot.cashdispenser.service.MoneyStackService;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.stereotype.Service;
+import springboot.cashdispenser.model.Bills;
+import springboot.cashdispenser.model.Card;
+import springboot.cashdispenser.model.Par;
+import springboot.cashdispenser.service.BillsService;
+import springboot.cashdispenser.service.CardService;
+import springboot.cashdispenser.service.CashDispenserService;
+import springboot.cashdispenser.service.ParService;
 
 @Service
+@Transactional
 public class CashDispenserServiceImpl implements CashDispenserService {
-    private static final List<Integer> ACCEPTABLE_PARS = List.of(100, 200, 500);
     private final CardService cardService;
-    private final MoneyStackService moneyStackService;
+    private final BillsService billsService;
+    private final ParService parService;
 
     public CashDispenserServiceImpl(CardService cardService,
-                                    MoneyStackService moneyStackService) {
+                                    BillsService billsService,
+                                    ParService parService) {
         this.cardService = cardService;
-        this.moneyStackService = moneyStackService;
+        this.billsService = billsService;
+        this.parService = parService;
     }
 
     @Override
-    @Transactional
-    public void putMoneyOnCard(String cardNumber, List<MoneyStack> bills) {
+    public void putMoneyOnCard(String cardNumber, List<Bills> billsList) {
+        checkPar(billsList);
         Card card = cardService.getByCardNumber(cardNumber);
-        long sum = bills.stream()
-                .mapToLong(bill -> {
-                    if (ACCEPTABLE_PARS.contains(bill.getPar())) {
-                       return bill.getPar() * bill.getNumber();
-                    } else {
-                        throw new RuntimeException("unsuitable bill\n  suitable bills: " + ACCEPTABLE_PARS);
-                    }
-                }).sum();
+        long sum = billsList.stream()
+                .mapToLong(bill ->
+                        (long) bill.getPar().getPar() * bill.getNumber()
+                ).sum();
         card.setAmount(card.getAmount().add(BigDecimal.valueOf(sum)));
-        moneyStackService.addMoney(bills);
+        addListOfBills(billsList);
     }
 
     @Override
-    @Transactional
-    public List<MoneyStack> getMoneyFromCard(Card inputCard, Long amount) {
+    public List<Bills> getMoneyFromCard(Card inputCard, Integer amount) {
         cardService.checkCard(inputCard);
         cardService.checkAmountOnCard(inputCard, BigDecimal.valueOf(amount));
-        List<MoneyStack> moneyStacks = moneyStackService.getAll();
-        List<MoneyStack> output = new ArrayList<>();
-        for (MoneyStack moneyStack : moneyStacks) {
-            long numberBillsOfOnePar = amount / moneyStack.getPar();
-            if (moneyStack.getNumber() >= numberBillsOfOnePar) {
-                amount -= numberBillsOfOnePar * moneyStack.getPar();
-                MoneyStack outputMoneyStack
-                        = new MoneyStack(numberBillsOfOnePar, moneyStack.getPar());
+        List<Bills> billsList = billsService.getAll();
+        List<Bills> output = new ArrayList<>();
+        for (Bills bills : billsList) {
+            int numberBillsOfOnePar = amount / bills.getPar().getPar();
+            if (bills.getNumber() >= numberBillsOfOnePar) {
+                amount -= numberBillsOfOnePar * bills.getPar().getPar();
+                Bills outputMoneyStack
+                        = new Bills(numberBillsOfOnePar, bills.getPar().getPar());
                 output.add(outputMoneyStack);
-                moneyStack.setNumber(moneyStack.getNumber() - numberBillsOfOnePar);
+                bills.setNumber(bills.getNumber() - numberBillsOfOnePar);
             } else {
-                amount -= moneyStack.getNumber() * moneyStack.getPar();
-                output.add(moneyStack.clone());
-                moneyStack.setNumber(0L);
+                amount -= bills.getNumber() * bills.getPar().getPar();
+                output.add(bills.clone());
+                bills.setNumber(0);
             }
             if (amount == 0) {
                 break;
@@ -66,19 +66,33 @@ public class CashDispenserServiceImpl implements CashDispenserService {
         if (amount > 0) {
             throw new RuntimeException("there is not enough money in the ATM");
         }
-        moneyStacks.forEach(moneyStackService::update);
+        billsList.forEach(billsService::update);
         return output;
     }
 
     @Override
-    @Transactional
-    public void transferMoneyToAnotherCard(Card senderCard, String NumberOfAcceptCard, BigDecimal amount) {
-        cardService.checkCard(senderCard);
-        cardService.checkAmountOnCard(senderCard, amount);
-        senderCard.setAmount(senderCard.getAmount().subtract(amount));
-        Card acceptCard = cardService.getByCardNumber(NumberOfAcceptCard);
-        acceptCard.setAmount(acceptCard.getAmount().add(amount));
-        cardService.update(senderCard);
-        cardService.update(acceptCard);
+    public void addListOfBills(List<Bills> billsList) {
+        checkPar(billsList);
+        List<Bills> billsListFromDB = billsService.getAll();
+        for (Bills billsFromDB : billsListFromDB) {
+            for (Bills bills: billsList) {
+                if (billsFromDB.getPar().getPar().equals(bills.getPar().getPar())) {
+                    billsFromDB.setNumber(billsFromDB.getNumber() + bills.getNumber());
+                    billsList.remove(bills);
+                    break;
+                }
+            }
+        }
+        billsService.saveAll(billsListFromDB);
+    }
+
+    public void checkPar(List<Bills> listBills) {
+        List<Par> checkList = parService.getAll();
+        for (Bills bills : listBills) {
+            if (checkList.stream()
+                    .noneMatch(o -> o.getPar().equals(bills.getPar().getPar()))) {
+                throw new RuntimeException("unsuitable bill\n  suitable bills: " + checkList);
+            }
+        }
     }
 }

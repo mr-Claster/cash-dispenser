@@ -7,21 +7,29 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 @Entity
+@Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(unique=true)
+    @Column(unique = true)
     private String username;
     private String password;
     @ManyToMany
     private List<Role> roles;
     @OneToMany
     private List<Card> cards;
+
+    public User() {
+        roles = new ArrayList<>();
+        cards = new ArrayList<>();
+    }
 
     public Long getId() {
         return id;

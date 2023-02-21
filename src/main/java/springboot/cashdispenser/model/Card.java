@@ -18,8 +18,8 @@ public class Card {
     private Long id;
     @Column(unique = true, name = "card_number")
     private String cardNumber;
-    private String CVV;
-    private String PIN;
+    private String cvv;
+    private String pin;
     @Column(name = "expiration_date")
     private LocalDate expirationDate;
     private BigDecimal amount;
@@ -40,20 +40,20 @@ public class Card {
         this.cardNumber = cardNumber;
     }
 
-    public String getCVV() {
-        return CVV;
+    public String getCvv() {
+        return cvv;
     }
 
-    public void setCVV(String cardVerificationValue) {
-        this.CVV = cardVerificationValue;
+    public void setCvv(String cardVerificationValue) {
+        this.cvv = cardVerificationValue;
     }
 
-    public String getPIN() {
-        return PIN;
+    public String getPin() {
+        return pin;
     }
 
-    public void setPIN(String personalIdentificationNumber) {
-        this.PIN = personalIdentificationNumber;
+    public void setPin(String personalIdentificationNumber) {
+        this.pin = personalIdentificationNumber;
     }
 
     public LocalDate getExpirationDate() {
@@ -83,8 +83,8 @@ public class Card {
         Card card = (Card) o;
         return Objects.equals(id, card.id)
                 && Objects.equals(cardNumber, card.cardNumber)
-                && Objects.equals(CVV, card.CVV)
-                && Objects.equals(PIN, card.PIN)
+                && Objects.equals(cvv, card.cvv)
+                && Objects.equals(pin, card.pin)
                 && Objects.equals(expirationDate, card.expirationDate)
                 && Objects.equals(amount.stripTrailingZeros(), card.amount.stripTrailingZeros());
     }

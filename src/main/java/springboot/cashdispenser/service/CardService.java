@@ -1,7 +1,7 @@
 package springboot.cashdispenser.service;
 
-import springboot.cashdispenser.model.Card;
 import java.math.BigDecimal;
+import springboot.cashdispenser.model.Card;
 
 public interface CardService {
     Card save(Card card);
@@ -13,4 +13,8 @@ public interface CardService {
     void checkAmountOnCard(Card card, BigDecimal amount);
 
     Card getByCardNumber(String cardNumber);
+
+    void transferMoneyToAnotherCard(Card senderCard,
+                                    String numberOfAcceptCard,
+                                    BigDecimal amount);
 }

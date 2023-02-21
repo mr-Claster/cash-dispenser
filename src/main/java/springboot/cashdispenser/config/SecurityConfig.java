@@ -31,9 +31,19 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain configure(HttpSecurity http) throws Exception {// TODO: FINISH
-        return http.authorizeRequests(auth -> {
-            //auth.regexMatchers(HttpMethod.GET)
-        }).build();
+    public SecurityFilterChain configure(HttpSecurity http) throws Exception {
+        return http
+                .authorizeHttpRequests(auth -> {
+                    auth.requestMatchers(HttpMethod.POST, "/cash-dispensers")
+                            .hasAnyAuthority("ROLE_ADMIN");
+                    auth.requestMatchers("/**").permitAll();
+                })
+                .httpBasic()
+                .and()
+                .formLogin()
+                .permitAll()
+                .and()
+                .csrf().disable()
+                .build();
     }
 }

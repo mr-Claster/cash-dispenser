@@ -1,14 +1,13 @@
 package springboot.cashdispenser.service;
 
-import springboot.cashdispenser.model.Card;
-import springboot.cashdispenser.model.MoneyStack;
-import java.math.BigDecimal;
 import java.util.List;
+import springboot.cashdispenser.model.Bills;
+import springboot.cashdispenser.model.Card;
 
 public interface CashDispenserService {
-    void putMoneyOnCard(String cardNumber, List<MoneyStack> bills);
+    void putMoneyOnCard(String cardNumber, List<Bills> billsList);
 
-    List<MoneyStack> getMoneyFromCard(Card card, Long amount);
+    List<Bills> getMoneyFromCard(Card card, Integer amount);
 
-    void transferMoneyToAnotherCard(Card senderCard, String acceptCard, BigDecimal amount);
+    public void addListOfBills(List<Bills> billsList);
 }

@@ -1,5 +1,6 @@
 package springboot.cashdispenser.service.impl;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 import springboot.cashdispenser.model.Role;
 import springboot.cashdispenser.repository.RoleRepository;
@@ -11,6 +12,21 @@ public class RoleServiceImpl implements RoleService {
 
     public RoleServiceImpl(RoleRepository roleRepository) {
         this.roleRepository = roleRepository;
+    }
+
+    @PostConstruct
+    public void init() {
+        Role admin = new Role();
+        admin.setRoleName("ADMIN");
+        Role user = new Role();
+        user.setRoleName("USER");
+        save(admin);
+        save(user);
+    }
+
+    @Override
+    public Role save(Role role) {
+        return roleRepository.save(role);
     }
 
     @Override
