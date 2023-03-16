@@ -1,6 +1,5 @@
 package springboot.cashdispenser.service.impl;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -21,17 +20,6 @@ public class CardServiceImpl implements CardService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @PostConstruct
-    public void init() {
-        Card card = new Card();
-        card.setAmount(BigDecimal.valueOf(5000));
-        card.setCardNumber("1");
-        card.setExpirationDate(LocalDate.MAX);
-        card.setCvv("111");
-        card.setPin("1111");
-        save(card);
-    }
-
     @Override
     @Transactional
     public void transferMoneyToAnotherCard(Card senderCard,
@@ -48,8 +36,7 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public Card save(Card card) {
-        card.setPin(
-                passwordEncoder.encode(card.getPin()));
+        card.setPin(passwordEncoder.encode(card.getPin()));
         return cardRepository.saveAndFlush(card);
     }
 
@@ -68,6 +55,9 @@ public class CardServiceImpl implements CardService {
         }
         card.setPin(byCardNumber.getPin());
         card.setId(byCardNumber.getId());
+        if (card.getExpirationDate().isBefore(LocalDate.now())) {
+            throw new RuntimeException("card has expired");
+        }
         if (!card.equals(byCardNumber)) {
             throw new RuntimeException("incorrect card data");
         }

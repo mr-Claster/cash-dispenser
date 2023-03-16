@@ -29,7 +29,7 @@ public class ParServiceImpl implements ParService {
 
     @Override
     public Par findParByPar(Integer par) {
-        return parRepository.findParByPar(par);
+        return parRepository.findParByValue(par);
     }
 
     @Override

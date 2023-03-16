@@ -15,13 +15,13 @@ public class Par implements Cloneable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(unique = true)
-    private Integer par;
+    private Integer value;
 
     public Par() {
     }
 
-    public Par(Integer par) {
-        this.par = par;
+    public Par(Integer value) {
+        this.value = value;
     }
 
     public Long getId() {
@@ -32,12 +32,12 @@ public class Par implements Cloneable {
         this.id = id;
     }
 
-    public Integer getPar() {
-        return par;
+    public Integer getValue() {
+        return value;
     }
 
-    public void setPar(Integer par) {
-        this.par = par;
+    public void setValue(Integer par) {
+        this.value = par;
     }
 
     @Override
@@ -59,14 +59,14 @@ public class Par implements Cloneable {
         }
         Par par1 = (Par) o;
         return Objects.equals(id, par1.id)
-                && Objects.equals(par, par1.par);
+                && Objects.equals(value, par1.value);
     }
 
     @Override
     public String toString() {
         return "Par{"
                 + "id=" + id
-                + ", par=" + par
+                + ", par=" + value
                 + '}';
     }
 }

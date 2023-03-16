@@ -14,7 +14,6 @@ import springboot.cashdispenser.service.CashDispenserService;
 import springboot.cashdispenser.service.ParService;
 
 @Service
-@Transactional
 public class CashDispenserServiceImpl implements CashDispenserService {
     private final CardService cardService;
     private final BillsService billsService;
@@ -29,33 +28,38 @@ public class CashDispenserServiceImpl implements CashDispenserService {
     }
 
     @Override
+    @Transactional
     public void putMoneyOnCard(String cardNumber, List<Bills> billsList) {
         checkPar(billsList);
         Card card = cardService.getByCardNumber(cardNumber);
         long sum = billsList.stream()
                 .mapToLong(bill ->
-                        (long) bill.getPar().getPar() * bill.getNumber()
+                        (long) bill.getPar().getValue() * bill.getNumber()
                 ).sum();
         card.setAmount(card.getAmount().add(BigDecimal.valueOf(sum)));
+        cardService.save(card);
         addListOfBills(billsList);
     }
 
     @Override
+    @Transactional
     public List<Bills> getMoneyFromCard(Card inputCard, Integer amount) {
         cardService.checkCard(inputCard);
         cardService.checkAmountOnCard(inputCard, BigDecimal.valueOf(amount));
+        inputCard.setAmount(inputCard.getAmount().subtract(BigDecimal.valueOf(amount)));
+        cardService.save(inputCard);
         List<Bills> billsList = billsService.getAll();
         List<Bills> output = new ArrayList<>();
         for (Bills bills : billsList) {
-            int numberBillsOfOnePar = amount / bills.getPar().getPar();
+            int numberBillsOfOnePar = amount / bills.getPar().getValue();
             if (bills.getNumber() >= numberBillsOfOnePar) {
-                amount -= numberBillsOfOnePar * bills.getPar().getPar();
+                amount -= numberBillsOfOnePar * bills.getPar().getValue();
                 Bills outputMoneyStack
-                        = new Bills(numberBillsOfOnePar, bills.getPar().getPar());
+                        = new Bills(numberBillsOfOnePar, bills.getPar().getValue());
                 output.add(outputMoneyStack);
                 bills.setNumber(bills.getNumber() - numberBillsOfOnePar);
             } else {
-                amount -= bills.getNumber() * bills.getPar().getPar();
+                amount -= bills.getNumber() * bills.getPar().getValue();
                 output.add(bills.clone());
                 bills.setNumber(0);
             }
@@ -71,12 +75,13 @@ public class CashDispenserServiceImpl implements CashDispenserService {
     }
 
     @Override
+    @Transactional
     public void addListOfBills(List<Bills> billsList) {
         checkPar(billsList);
         List<Bills> billsListFromDB = billsService.getAll();
         for (Bills billsFromDB : billsListFromDB) {
             for (Bills bills: billsList) {
-                if (billsFromDB.getPar().getPar().equals(bills.getPar().getPar())) {
+                if (billsFromDB.getPar().getValue().equals(bills.getPar().getValue())) {
                     billsFromDB.setNumber(billsFromDB.getNumber() + bills.getNumber());
                     billsList.remove(bills);
                     break;
@@ -90,7 +95,7 @@ public class CashDispenserServiceImpl implements CashDispenserService {
         List<Par> checkList = parService.getAll();
         for (Bills bills : listBills) {
             if (checkList.stream()
-                    .noneMatch(o -> o.getPar().equals(bills.getPar().getPar()))) {
+                    .noneMatch(o -> o.getValue().equals(bills.getPar().getValue()))) {
                 throw new RuntimeException("unsuitable bill\n  suitable bills: " + checkList);
             }
         }

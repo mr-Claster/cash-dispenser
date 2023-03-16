@@ -25,7 +25,7 @@ public class CashDispenserController {
         this.billsMapper = billsMapper;
     }
 
-    @PostMapping("/card")
+    @PostMapping("/on-card")
     public void putMoneyOnCard(@RequestParam String cardNumber,
                                @RequestBody List<BillsRequestDto> billsDto) {
         cashDispenserService.putMoneyOnCard(cardNumber, billsDto.stream()
@@ -33,7 +33,7 @@ public class CashDispenserController {
                 .collect(Collectors.toList()));
     }
 
-    @PostMapping("/money")
+    @PostMapping("/from-card")
     public List<BillsResponseDto> getMoneyFromCard(@RequestBody Card card,
                                                    @RequestParam Integer amount) {
         return cashDispenserService.getMoneyFromCard(card, amount).stream()

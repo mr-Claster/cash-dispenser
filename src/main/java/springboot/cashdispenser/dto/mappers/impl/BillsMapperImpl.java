@@ -16,8 +16,8 @@ public class BillsMapperImpl implements BillsMapper {
     @Override
     public BillsResponseDto toDto(Bills bills) {
         BillsResponseDto billsResponseDto = new BillsResponseDto();
-        billsResponseDto.setPar(bills.getPar().getPar());
+        billsResponseDto.setPar(bills.getPar().getValue());
         billsResponseDto.setNumber(bills.getNumber());
-        return null;
+        return billsResponseDto;
     }
 }

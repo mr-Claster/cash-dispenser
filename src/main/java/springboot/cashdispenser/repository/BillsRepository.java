@@ -7,7 +7,7 @@ import springboot.cashdispenser.model.Bills;
 
 public interface BillsRepository extends JpaRepository<Bills, Long> {
     @Query("SELECT b FROM Bills b "
-            + "JOIN Par p "
-            + "ORDER BY p.par DESC")
+            + "JOIN FETCH Par p "
+            + "ORDER BY p.value DESC")
     List<Bills> findAll();
 }
