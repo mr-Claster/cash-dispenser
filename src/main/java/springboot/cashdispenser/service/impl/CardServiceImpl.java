@@ -53,14 +53,6 @@ public class CardServiceImpl implements CardService {
         if (!passwordEncoder.matches(card.getPin(), byCardNumber.getPin())) {
             throw new RuntimeException("incorrect PIN");
         }
-        card.setPin(byCardNumber.getPin());
-        card.setId(byCardNumber.getId());
-        if (card.getExpirationDate().isBefore(LocalDate.now())) {
-            throw new RuntimeException("card has expired");
-        }
-        if (!card.equals(byCardNumber)) {
-            throw new RuntimeException("incorrect card data");
-        }
     }
 
     @Override

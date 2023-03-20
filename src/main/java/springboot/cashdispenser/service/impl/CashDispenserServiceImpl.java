@@ -79,11 +79,10 @@ public class CashDispenserServiceImpl implements CashDispenserService {
     public void addListOfBills(List<Bills> billsList) {
         checkPar(billsList);
         List<Bills> billsListFromDB = billsService.getAll();
-        for (Bills billsFromDB : billsListFromDB) {
-            for (Bills bills: billsList) {
+        for (Bills bills: billsList) {
+            for (Bills billsFromDB : billsListFromDB) {
                 if (billsFromDB.getPar().getValue().equals(bills.getPar().getValue())) {
                     billsFromDB.setNumber(billsFromDB.getNumber() + bills.getNumber());
-                    billsList.remove(bills);
                     break;
                 }
             }
